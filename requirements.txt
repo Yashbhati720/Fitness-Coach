@@ -1,6 +1,9 @@
 # AI Fitness Coach — Requirements
 # Install with: pip install -r requirements.txt
 
+# Web Framework
+flask>=2.0.0
+
 # Core ML / DL
 torch>=2.0.0
 numpy>=1.24.0
@@ -10,4 +13,5 @@ mediapipe>=0.10.0
 opencv-python>=4.8.0
 
 # Utilities
+pymysql>=1.0.2
 dataclasses; python_version < "3.7"

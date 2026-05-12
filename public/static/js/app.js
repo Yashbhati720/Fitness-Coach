@@ -1,5 +1,5 @@
 // ── Navigation ──────────────────────────────────────────────────────────
-const titles = {pose:"Live Pose Estimation",bmi:"BMI Calculator",recs:"Exercise Recommendations",nutrition:"Nutrition Plan",rl:"RL Progress Tracker",profile:"User Profile"};
+const titles = {pose:"Live Pose Estimation",bmi:"BMI Calculator",recs:"Exercise Recommendations",nutrition:"Nutrition Plan",rl:"RL Progress Tracker",workouts:"Workout Log",goals:"Goals",progress:"Progress Charts",profile:"User Profile"};
 function showPanel(id, btn) {
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
@@ -9,6 +9,9 @@ function showPanel(id, btn) {
   if (id==="recs")      loadRecs();
   if (id==="nutrition") loadNutrition();
   if (id==="rl")        loadRL();
+  if (id==="workouts")  loadWorkouts();
+  if (id==="goals")     loadGoals();
+  if (id==="progress")  loadProgress();
 }
  
 // ── Mode toggle ─────────────────────────────────────────────────────────
@@ -483,4 +486,90 @@ function disableProfileEdit() {
 }
 
 disableProfileEdit();
+
+// ── Workout Log ─────────────────────────────────────────────────────────
+async function logWorkout() {
+  const exercise = document.getElementById("w-exercise").value;
+  const sets = document.getElementById("w-sets").value;
+  const reps = document.getElementById("w-reps").value;
+  const weight = document.getElementById("w-weight").value;
+  const date = document.getElementById("w-date").value;
+  if (!exercise || !sets || !reps || !weight || !date) return alert("Fill all fields");
+  const res = await fetch("/api/workouts", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({exercise, sets: parseInt(sets), reps: parseInt(reps), weight: parseFloat(weight), date})
+  });
+  if (res.ok) {
+    alert("Workout logged!");
+    loadWorkouts();
+  }
+}
+
+async function loadWorkouts() {
+  const res = await fetch("/api/workouts");
+  const workouts = await res.json();
+  const list = document.getElementById("workout-list");
+  list.innerHTML = workouts.map(w => `<div>${w.date}: ${w.exercise} - ${w.sets}x${w.reps} @ ${w.weight}kg</div>`).join("");
+}
+
+// ── Goals ─────────────────────────────────────────────────────────
+async function setGoal() {
+  const goal_type = document.getElementById("g-type").value;
+  const target_value = document.getElementById("g-target").value;
+  const current_value = document.getElementById("g-current").value;
+  const deadline = document.getElementById("g-deadline").value;
+  if (!goal_type || !target_value || !current_value || !deadline) return alert("Fill all fields");
+  const res = await fetch("/api/goals", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({goal_type, target_value: parseFloat(target_value), current_value: parseFloat(current_value), deadline})
+  });
+  if (res.ok) {
+    alert("Goal set!");
+    loadGoals();
+  }
+}
+
+async function loadGoals() {
+  const res = await fetch("/api/goals");
+  const goals = await res.json();
+  const list = document.getElementById("goal-list");
+  list.innerHTML = goals.map(g => `<div>${g.goal_type}: ${g.current_value}/${g.target_value} by ${g.deadline}</div>`).join("");
+}
+
+// ── Progress ─────────────────────────────────────────────────────────
+async function logProgress() {
+  const date = document.getElementById("pr-date").value;
+  const weight = document.getElementById("pr-weight").value;
+  const bmi = document.getElementById("pr-bmi").value;
+  const goal_progress = document.getElementById("pr-goal").value;
+  if (!date || !weight || !bmi || !goal_progress) return alert("Fill all fields");
+  const res = await fetch("/api/progress", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({date, weight: parseFloat(weight), bmi: parseFloat(bmi), goal_progress: parseFloat(goal_progress)})
+  });
+  if (res.ok) {
+    alert("Progress logged!");
+    loadProgress();
+  }
+}
+
+async function loadProgress() {
+  const res = await fetch("/api/progress");
+  const progress = await res.json();
+  const ctx = document.getElementById("progress-chart").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: progress.map(p => p.date),
+      datasets: [
+        {label: "Weight", data: progress.map(p => p.weight), borderColor: "blue"},
+        {label: "BMI", data: progress.map(p => p.bmi), borderColor: "green"},
+        {label: "Goal Progress", data: progress.map(p => p.goal_progress), borderColor: "red"}
+      ]
+    }
+  });
+}
 

@@ -1,16 +1,12 @@
 [build]
   publish = "public"
-  functions = "netlify/functions"
-
-[functions]
-  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/app"
+  to = "http://localhost:5432/:splat"
   status = 200
 
 [[redirects]]
   from = "/video_feed"
-  to = "/.netlify/functions/app"
+  to = "http://localhost:5432/video_feed"
   status = 200

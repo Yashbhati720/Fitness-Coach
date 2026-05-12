@@ -21,10 +21,95 @@ import json
 import numpy as np
 import time
 import base64
+import psycopg2
+import psycopg2.extras
+import os
+import bcrypt
+from email_validator import validate_email, EmailNotValidError
 from dataclasses import asdict
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this to a random secret key
+app.template_folder = 'public/templates'
+app.static_folder = 'public/static'
+app.secret_key = '1982'  # Change this to a random secret key
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
+DB_PORT = os.environ.get('DB_PORT', '5432')
+DB_NAME = os.environ.get('DB_NAME', 'fitness_coach')
+DB_USER = os.environ.get('DB_USER', 'postgres')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'password')
+
+def get_db():
+    if DATABASE_URL:
+        return psycopg2.connect(DATABASE_URL)
+    return psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT,
+    )
+
+def init_db():
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute('DROP TABLE IF EXISTS progress CASCADE')
+            cur.execute('DROP TABLE IF EXISTS goals CASCADE')
+            cur.execute('DROP TABLE IF EXISTS workouts CASCADE')
+            cur.execute('DROP TABLE IF EXISTS users CASCADE')
+            cur.execute('''CREATE TABLE users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                email TEXT UNIQUE,
+                name TEXT,
+                age INTEGER,
+                weight REAL,
+                height REAL,
+                gender TEXT,
+                activity TEXT,
+                goal TEXT,
+                fitness_level TEXT,
+                comorbidities JSON,
+                bmi REAL,
+                diet_preference TEXT,
+                verified INTEGER DEFAULT 0
+            )''')
+            cur.execute('''CREATE TABLE workouts (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                exercise TEXT,
+                sets INTEGER,
+                reps INTEGER,
+                weight REAL,
+                date TEXT
+            )''')
+            cur.execute('''CREATE TABLE goals (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                goal_type TEXT,
+                target_value REAL,
+                current_value REAL,
+                deadline TEXT
+            )''')
+            cur.execute('''CREATE TABLE progress (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                date TEXT,
+                weight REAL,
+                bmi REAL,
+                goal_progress REAL
+            )''')
+            # Insert default user if not exists
+            hashed = bcrypt.hashpw('admin'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            cur.execute('''INSERT INTO users (username, password, email, name, age, weight, height, gender, activity, goal, fitness_level, comorbidities, bmi, diet_preference, verified)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (username) DO NOTHING''',
+                ('admin', hashed, 'admin@example.com', 'Yash Bhati', 22, 80, 182, 'male', 'moderately_active', 'muscle_gain', 'beginner', '[]', None, 'non_veg', 1))
+            conn.commit()
+
+init_db()
 
 # ── Try importing project modules ──────────────────────────────────────────
 try:
@@ -42,9 +127,9 @@ current_feedback = {"score": 0, "cues": [], "exercise": "squat"}
 
 USER = {
     "name": "Yash Bhati",
-    "age": 24,
-    "weight": 70,
-    "height": 172,
+    "age": 22,
+    "weight": 80,
+    "height": 182,
     "gender": "male",
     "activity": "moderately_active",
     "goal": "muscle_gain",
@@ -325,17 +410,49 @@ def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        if username == "admin" and password == "admin":  # Simple hardcoded credentials
-            session['logged_in'] = True
-            return redirect(url_for('index'))
-        else:
-            return render_template("login.html", error="Invalid credentials")
+        with get_db() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+                user = cur.fetchone()
+                if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+                    session['logged_in'] = True
+                    session['user_id'] = user['id']
+                    return redirect(url_for('dashboard'))
+                else:
+                    return render_template("login.html", error="Invalid credentials")
     return render_template("login.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        email = request.form.get("email")
+        try:
+            valid = validate_email(email)
+            email = valid.email
+        except EmailNotValidError as e:
+            return render_template("register.html", error=str(e))
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        try:
+            with get_db() as conn:
+                with conn.cursor() as cur:
+                    cur.execute('INSERT INTO users (username, password, email) VALUES (%s, %s, %s)', (username, hashed, email))
+                    conn.commit()
+            session['logged_in'] = True
+            return redirect(url_for('dashboard'))
+        except psycopg2.IntegrityError:
+            return render_template("register.html", error="Username or email already exists")
+    return render_template("register.html")
 
 @app.route("/")
 def index():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
+    return redirect(url_for('dashboard'))
+
+@app.route("/dashboard")
+def dashboard():
     return render_template("index.html", user=USER)
 
 
@@ -565,11 +682,76 @@ def update_profile():
     return jsonify({"status": "ok", "user": USER})
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
 
+@app.route("/api/workouts", methods=["GET", "POST"])
+def workouts():
+    if 'logged_in' not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    user_id = session['user_id']
+    if request.method == "POST":
+        data = request.json
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute('INSERT INTO workouts (user_id, exercise, sets, reps, weight, date) VALUES (%s, %s, %s, %s, %s, %s)',
+                           (user_id, data['exercise'], data['sets'], data['reps'], data['weight'], data['date']))
+                conn.commit()
+        return jsonify({"message": "Workout logged"})
+    else:
+        with get_db() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute('SELECT * FROM workouts WHERE user_id = %s', (user_id,))
+                workouts = cur.fetchall()
+        return jsonify([dict(w) for w in workouts])
+
+@app.route("/api/goals", methods=["GET", "POST"])
+def goals():
+    if 'logged_in' not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    user_id = session['user_id']
+    if request.method == "POST":
+        data = request.json
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute('INSERT INTO goals (user_id, goal_type, target_value, current_value, deadline) VALUES (%s, %s, %s, %s, %s)',
+                           (user_id, data['goal_type'], data['target_value'], data['current_value'], data['deadline']))
+                conn.commit()
+        return jsonify({"message": "Goal set"})
+    else:
+        with get_db() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute('SELECT * FROM goals WHERE user_id = %s', (user_id,))
+                goals = cur.fetchall()
+        return jsonify([dict(g) for g in goals])
+
+@app.route("/api/progress", methods=["GET", "POST"])
+def progress():
+    if 'logged_in' not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    user_id = session['user_id']
+    if request.method == "POST":
+        data = request.json
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute('INSERT INTO progress (user_id, date, weight, bmi, goal_progress) VALUES (%s, %s, %s, %s, %s)',
+                           (user_id, data['date'], data['weight'], data['bmi'], data['goal_progress']))
+                conn.commit()
+        return jsonify({"message": "Progress logged"})
+    else:
+        with get_db() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute('SELECT * FROM progress WHERE user_id = %s', (user_id,))
+                progress = cur.fetchall()
+        return jsonify([dict(p) for p in progress])
+
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    init_db()
+    debug = os.environ.get("FLASK_ENV") == "development"
+    port  = int(os.environ.get("PORT", 8000))   # ← default port set to 8000
+    print(f"[App] Starting on http://0.0.0.0:{port}  debug={debug}")
+    print(f"[App] Open in browser: http://localhost:{port}")
+    app.run(debug=debug, host="0.0.0.0", port=port)

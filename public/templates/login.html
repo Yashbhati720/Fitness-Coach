@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitAI Coach — Sign in</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #32183a;
+      --surface: #111118;
+      --surface2:#1a1a24;
+      --border:  rgba(255,255,255,0.07);
+      --accent:  #7c6dfa;
+      --accent2: #fa6d8e;
+      --accent3: #6dfabc;
+      --text:    #f0effe;
+      --muted:   #6b6a7e;
+      --mono:    'DM Mono', monospace;
+      --head:    'Syne', sans-serif;
+      --body:    'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── Left panel  branding ── */
+    .brand-panel {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle animated orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .orb1 { width: 300px; height: 300px; background: var(--accent); top: -60px; left: -80px; animation-delay: 0s; }
+    .orb2 { width: 220px; height: 220px; background: var(--accent2); bottom: 40px; right: -40px; animation-delay: -4s; }
+    .orb3 { width: 160px; height: 160px; background: var(--accent3); top: 50%; left: 60%; animation-delay: -7s; }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(20px, 30px) scale(1.08); }
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { box-shadow: 0 0 8px var(--accent); }
+      50%      { box-shadow: 0 0 20px var(--accent); }
+    }
+    .logo-name {
+      font-family: var(--head);
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-body {
+      position: relative;
+      z-index: 1;
+    }
+    .brand-headline {
+      font-family: var(--head);
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .brand-headline span { color: var(--accent); }
+    .brand-desc {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 340px;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .feature-dot {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .feature-dot.purple { background: rgba(124,109,250,0.15); }
+    .feature-dot.pink   { background: rgba(250,109,142,0.15); }
+    .feature-dot.green  { background: rgba(109,250,188,0.15); }
+    .feature-dot.amber  { background: rgba(249,199,79,0.15); }
+
+    /* ── Right panel — auth card ── */
+    .auth-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* ── Tab switcher ── */
+    .tab-bar {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 2rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--head);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: -0.01em;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(124,109,250,0.35);
+    }
+
+    /* ── Form panels ── */
+    .form-panel {
+      display: none;
+      animation: fadeSlide 0.3s ease forwards;
+    }
+    .form-panel.active { display: block; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-title {
+      font-family: var(--head);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .panel-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── Form elements ── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 500;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 15px;
+      pointer-events: none;
+    }
+    .input-wrap input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px 11px 38px;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrap input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,109,250,0.12);
+    }
+    .input-wrap input.err { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(250,109,142,0.1); }
+    .input-wrap input.ok  { border-color: var(--accent3); }
+
+    /* show/hide password toggle */
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 2px 4px;
+      transition: color 0.15s;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    .field-error {
+      font-size: 0.72rem;
+      color: var(--accent2);
+      display: none;
+    }
+
+    /* password strength */
+    .pw-strength-bar {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .pw-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0;
+      transition: width 0.3s, background 0.3s;
+    }
+    .pw-hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+      font-family: var(--mono);
+      transition: color 0.3s;
+    }
+
+    /* ── Reg grid ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 1rem;
+    }
+
+    /* ── Pill selectors ── */
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .pill-row input[type="radio"] { display: none; }
+    .pill-row label {
+      padding: 6px 13px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-transform: none;
+      letter-spacing: 0;
+      transition: all 0.15s;
+      font-weight: 400;
+    }
+    .pill-row input[type="radio"]:checked + label {
+      background: rgba(124,109,250,0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .pill-row label:hover { border-color: rgba(124,109,250,0.4); color: var(--text); }
+
+    /* section divider */
+    .section-sep {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+      margin: 1.25rem 0 1rem;
+    }
+
+    /* ── Error banner ── */
+    .error-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(250,109,142,0.08);
+      border: 1px solid rgba(250,109,142,0.25);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 0.84rem;
+      color: var(--accent2);
+      margin-bottom: 1.25rem;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    /* ── Remember me / forgot ── */
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .remember input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .forgot-link {
+      font-size: 0.82rem;
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .forgot-link:hover { opacity: 0.75; }
+
+    /* ── Submit button ── */
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(124,109,250,0.25);
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .submit-btn:hover  { opacity: 0.88; box-shadow: 0 6px 24px rgba(124,109,250,0.4); }
+    .submit-btn:active { transform: scale(0.98); }
+
+    /* loading spinner inside button */
+    .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 1.25rem 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Switch panel link ── */
+    .switch-link {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 1.25rem;
+    }
+    .switch-link button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: var(--body);
+      padding: 0;
+      transition: opacity 0.15s;
+    }
+    .switch-link button:hover { opacity: 0.75; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .brand-panel { display: none; }
+      .auth-panel { padding: 1.5rem 1rem; align-items: flex-start; padding-top: 3rem; }
+    }
+    @media (max-width: 420px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Left brand panel ══ -->
+<div class="brand-panel">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <div class="brand-logo">
+    <div class="logo-dot"></div>
+    <span class="logo-name">FitAI Coach</span>
+  </div>
+
+  <div class="brand-body">
+    <h1 class="brand-headline">Your AI-powered<br><span>fitness coach.</span></h1>
+    <p class="brand-desc">Real-time pose analysis, personalised workout recommendations, and adaptive nutrition plans — all driven by machine learning.</p>
+  </div>
+
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-dot purple">▶</div>
+      Live pose estimation with form scoring
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot pink">★</div>
+      Neural collaborative filtering for exercises
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot green">◆</div>
+      Personalised macro & meal planning
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot amber">↑</div>
+      Reinforcement learning that adapts to you
+    </div>
+  </div>
+</div>
+
+<!-- ══ Right auth panel ══ -->
+<div class="auth-panel">
+  <div class="auth-card">
+
+    <!-- Tab switcher -->
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" id="tab-login" role="tab" aria-selected="true" onclick="switchTab('login')">Sign in</button>
+      <button class="tab-btn"        id="tab-reg"   role="tab" aria-selected="false" onclick="switchTab('register')">Create account</button>
+    </div>
+
+    <!-- ══ LOGIN PANEL ══ -->
+    <div class="form-panel active" id="panel-login">
+      <div class="panel-title">Welcome back 👋</div>
+      <div class="panel-sub">Sign in to continue your fitness journey.</div>
+
+      {% if error and tab == 'login' %}
+      <div class="error-banner">⚠ {{ error }}</div>
+      {% endif %}
+      <div class="error-banner" id="login-err" style="display:none">⚠ <span id="login-err-msg"></span></div>
+
+      <form id="login-form" method="post" action="/login" novalidate>
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <div class="input-wrap">
+            <span class="input-icon">◉</span>
+            <input type="text" id="login-username" name="username" placeholder="Your username" autocomplete="username" required>
+          </div>
+          <span class="field-error" id="lerr-user">Please enter your username.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="login-password" name="password" placeholder="Your password" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw('login-password', this)" title="Show/hide password">👁</button>
+          </div>
+          <span class="field-error" id="lerr-pw">Please enter your password.</span>
+        </div>
+
+        <div class="form-options">
+          <label class="remember">
+            <input type="checkbox" name="remember"> Remember me
+          </label>
+          <a class="forgot-link" href="#">Forgot password?</a>
+        </div>
+
+        <button type="button" class="submit-btn" onclick="submitLogin()">
+          <div class="spinner" id="login-spinner"></div>
+          <span id="login-btn-text">Sign in →</span>
+        </button>
+      </form>
+
+      <div class="switch-link">
+        Don't have an account? <button onclick="switchTab('register')">Create one free →</button>
+      </div>
+    </div>
+
+    <!-- ══ REGISTER PANEL ══ -->
+    <div class="form-panel" id="panel-register">
+      <div class="panel-title">Get started 🚀</div>
+      <div class="panel-sub">Create your account and build your fitness profile.</div>
+
+      {% if error and tab == 'register' %}
+      <div class="error-banner">⚠ {{ error }}</div>
+      {% endif %}
+      <div class="error-banner" id="reg-err" style="display:none">⚠ <span id="reg-err-msg"></span></div>
+
+      <form id="reg-form" method="post" action="/register" enctype="multipart/form-data" novalidate>
+
+        <!-- Account -->
+        <div class="section-sep">Account</div>
+        <div class="two-col">
+          <div class="form-group">
+            <label for="r-username">Username</label>
+            <div class="input-wrap">
+              <span class="input-icon">◉</span>
+              <input type="text" id="r-username" name="username" placeholder="e.g. yash_bhati" autocomplete="username" required oninput="rVal('r-username','rerr-user', v=>v.trim().length>=3)">
+            </div>
+            <span class="field-error" id="rerr-user">Min 3 characters.</span>
+          </div>
+          <div class="form-group">
+            <label for="r-email">Email</label>
+            <div class="input-wrap">
+              <span class="input-icon">@</span>
+              <input type="email" id="r-email" name="email" placeholder="you@example.com" autocomplete="email" required oninput="rVal('r-email','rerr-email', v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))">
+            </div>
+            <span class="field-error" id="rerr-email">Valid email required.</span>
+          </div>
+          <div class="form-group">
+            <label for="r-password">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="r-password" name="password" placeholder="Min 8 chars" autocomplete="new-password" required oninput="checkStrength();rVal('r-password','rerr-pw',v=>v.length>=8)">
+              <button type="button" class="pw-toggle" onclick="togglePw('r-password',this)" title="Show/hide">👁</button>
+            </div>
+            <div class="pw-strength-bar"><div class="pw-fill" id="pw-fill"></div></div>
+            <div class="pw-hint" id="pw-hint">—</div>
+            <span class="field-error" id="rerr-pw">Min 8 characters.</span>
+          </div>
+          <div class="form-group">
+            <label for="r-confirm">Confirm password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="r-confirm" name="confirm_password" placeholder="Repeat password" autocomplete="new-password" required oninput="rVal('r-confirm','rerr-confirm',v=>v===document.getElementById('r-password').value)">
+              <button type="button" class="pw-toggle" onclick="togglePw('r-confirm',this)" title="Show/hide">👁</button>
+            </div>
+            <span class="field-error" id="rerr-confirm">Passwords don't match.</span>
+          </div>
+        </div>
+
+        <!-- Personal -->
+        <div class="section-sep">Personal details</div>
+        <div class="two-col">
+          <div class="form-group">
+            <label for="r-name">Full name</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="r-name" name="full_name" placeholder="e.g. Yash Bhati" required oninput="rVal('r-name','rerr-name',v=>v.trim().length>=2)">
+            </div>
+            <span class="field-error" id="rerr-name">Enter your full name.</span>
+          </div>
+          <div class="form-group">
+            <label for="r-age">Age</label>
+            <div class="input-wrap">
+              <span class="input-icon">#</span>
+              <input type="number" id="r-age" name="age" placeholder="e.g. 22" min="13" max="100">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="r-weight">Weight (kg)</label>
+            <div class="input-wrap">
+              <span class="input-icon">⚖</span>
+              <input type="number" id="r-weight" name="weight" placeholder="70" step="0.1" oninput="calcBMI()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="r-height">Height (cm)</label>
+            <div class="input-wrap">
+              <span class="input-icon">↕</span>
+              <input type="number" id="r-height" name="height" placeholder="175" step="0.1" oninput="calcBMI()">
+            </div>
+          </div>
+        </div>
+
+        <!-- BMI pill -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:0.84rem;font-family:var(--mono);">
+          <span style="color:var(--muted);">BMI</span>
+          <span id="bmi-val" style="color:var(--accent);font-weight:500;">—</span>
+          <span id="bmi-cat" style="font-size:0.75rem;color:var(--muted)"></span>
+          <input type="hidden" id="r-bmi" name="bmi">
+        </div>
+
+        <!-- Fitness profile -->
+        <div class="section-sep">Fitness profile</div>
+        <div style="margin-bottom:0.5rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Goal</div>
+        <div class="pill-row">
+          <input type="radio" id="g-muscle" name="goal" value="muscle_gain">
+          <label for="g-muscle">💪 Muscle gain</label>
+          <input type="radio" id="g-loss" name="goal" value="weight_loss">
+          <label for="g-loss">🔥 Weight loss</label>
+          <input type="radio" id="g-maint" name="goal" value="maintenance">
+          <label for="g-maint">⚖ Maintenance</label>
+        </div>
+        <span class="field-error" id="rerr-goal" style="display:none;margin-bottom:8px;">Please pick a goal.</span>
+
+        <div style="margin-bottom:0.5rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Level</div>
+        <div class="pill-row">
+          <input type="radio" id="l-beg" name="fitness_level" value="beginner">
+          <label for="l-beg">🌱 Beginner</label>
+          <input type="radio" id="l-int" name="fitness_level" value="intermediate">
+          <label for="l-int">⚡ Intermediate</label>
+          <input type="radio" id="l-adv" name="fitness_level" value="advanced">
+          <label for="l-adv">🏆 Advanced</label>
+        </div>
+        <span class="field-error" id="rerr-level" style="display:none;margin-bottom:8px;">Please pick your level.</span>
+
+        <button type="button" class="submit-btn" onclick="submitRegister()" style="margin-top:1.25rem;">
+          <div class="spinner" id="reg-spinner"></div>
+          <span id="reg-btn-text">Create account →</span>
+        </button>
+      </form>
+
+      <div class="switch-link">
+        Already have an account? <button onclick="switchTab('login')">Sign in →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ── Tab switching ── */
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-reg').classList.toggle('active', !isLogin);
+    const lp = document.getElementById('panel-login');
+    const rp = document.getElementById('panel-register');
+    lp.classList.remove('active');
+    rp.classList.remove('active');
+    // trigger re-animation
+    void (isLogin ? lp : rp).offsetWidth;
+    (isLogin ? lp : rp).classList.add('active');
+  }
+
+  // On load: if URL hash or server error, open correct tab
+  (function() {
+  const serverTab = "{{ tab | default('login') }}";
+  if (serverTab === 'register' || window.location.hash === '#register') {
+    switchTab('register');
+  }
+  })();
+
+  /* ── Password visibility toggle ── */
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    const shown = inp.type === 'text';
+    inp.type = shown ? 'password' : 'text';
+    btn.textContent = shown ? '👁' : '🙈';
+  }
+
+  /* ── Password strength ── */
+  function checkStrength() {
+    const pw = document.getElementById('r-password').value;
+    const fill = document.getElementById('pw-fill');
+    const hint = document.getElementById('pw-hint');
+    let s = 0;
+    if (pw.length >= 8)        s++;
+    if (/[A-Z]/.test(pw))      s++;
+    if (/[0-9]/.test(pw))      s++;
+    if (/[^A-Za-z0-9]/.test(pw)) s++;
+    const levels = [
+      { w:'0%',   bg:'transparent',   label:'—' },
+      { w:'25%',  bg:'#fa6d8e',       label:'Weak' },
+      { w:'50%',  bg:'#f9c74f',       label:'Fair' },
+      { w:'75%',  bg:'#7c6dfa',       label:'Good' },
+      { w:'100%', bg:'#6dfabc',       label:'Strong ✓' },
+    ];
+    const l = levels[s];
+    fill.style.width = l.w;
+    fill.style.background = l.bg;
+    hint.textContent = l.label;
+    hint.style.color = l.bg;
+  }
+
+  /* ── Generic field validator ── */
+  function rVal(inputId, errId, test) {
+    const el  = document.getElementById(inputId);
+    const err = document.getElementById(errId);
+    const val = el.value;
+    const ok  = test(val);
+    el.classList.toggle('err', !ok);
+    el.classList.toggle('ok',   ok);
+    err.style.display = ok ? 'none' : 'block';
+    return ok;
+  }
+
+  /* ── BMI calculator ── */
+  function calcBMI() {
+    const w = parseFloat(document.getElementById('r-weight').value);
+    const h = parseFloat(document.getElementById('r-height').value) / 100;
+    const valEl = document.getElementById('bmi-val');
+    const catEl = document.getElementById('bmi-cat');
+    const hid   = document.getElementById('r-bmi');
+    if (w > 0 && h > 0.1) {
+      const bmi = +(w / (h * h)).toFixed(1);
+      hid.value = bmi;
+      valEl.textContent = bmi;
+      let cat = '', col = '';
+      if      (bmi < 18.5) { cat = '· Underweight'; col = '#6dfabc'; }
+      else if (bmi < 25)   { cat = '· Normal';      col = '#6dfabc'; }
+      else if (bmi < 30)   { cat = '· Overweight';  col = '#f9c74f'; }
+      else                 { cat = '· Obese';        col = '#fa6d8e'; }
+      catEl.textContent = cat;
+      catEl.style.color = col;
+      valEl.style.color = col;
+    } else {
+      valEl.textContent = '—';
+      catEl.textContent = '';
+      hid.value = '';
+      valEl.style.color = 'var(--accent)';
+    }
+  }
+
+  /* ── Login submit ── */
+  function submitLogin() {
+    const user = document.getElementById('login-username').value.trim();
+    const pw   = document.getElementById('login-password').value;
+    let ok = true;
+    const ue = document.getElementById('lerr-user');
+    const pe = document.getElementById('lerr-pw');
+    if (!user) { document.getElementById('login-username').classList.add('err'); ue.style.display='block'; ok=false; } 
+    else { document.getElementById('login-username').classList.remove('err'); ue.style.display='none'; }
+    if (!pw)   { document.getElementById('login-password').classList.add('err'); pe.style.display='block'; ok=false; }
+    else { document.getElementById('login-password').classList.remove('err'); pe.style.display='none'; }
+    if (!ok) return;
+
+    const btn  = document.querySelector('#panel-login .submit-btn');
+    const spin = document.getElementById('login-spinner');
+    const txt  = document.getElementById('login-btn-text');
+    btn.disabled = true;
+    spin.style.display = 'block';
+    txt.textContent = 'Signing in…';
+
+    document.getElementById('login-form').submit();
+  }
+
+  /* ── Register submit ── */
+  function submitRegister() {
+    let ok = true;
+    ok = rVal('r-username', 'rerr-user',    v => v.trim().length >= 3)       && ok;
+    ok = rVal('r-email',    'rerr-email',   v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) && ok;
+    ok = rVal('r-password', 'rerr-pw',      v => v.length >= 8)              && ok;
+    ok = rVal('r-confirm',  'rerr-confirm', v => v === document.getElementById('r-password').value) && ok;
+    ok = rVal('r-name',     'rerr-name',    v => v.trim().length >= 2)        && ok;
+
+    const goal  = document.querySelector('input[name="goal"]:checked');
+    const level = document.querySelector('input[name="fitness_level"]:checked');
+    const ge = document.getElementById('rerr-goal');
+    const le = document.getElementById('rerr-level');
+    if (!goal)  { ge.style.display = 'block'; ok = false; } else ge.style.display = 'none';
+    if (!level) { le.style.display = 'block'; ok = false; } else le.style.display = 'none';
+
+    if (!ok) return;
+
+    const btn  = document.querySelector('#panel-register .submit-btn');
+    const spin = document.getElementById('reg-spinner');
+    const txt  = document.getElementById('reg-btn-text');
+    btn.disabled = true;
+    spin.style.display = 'block';
+    txt.textContent = 'Creating account…';
+
+    document.getElementById('reg-form').submit();
+  }
+
+  /* ── Enter key support ── */
+  document.getElementById('login-form').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitLogin();
+  });
+  document.getElementById('reg-form').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitRegister();
+  });
+</script>
+</body>
+</html>

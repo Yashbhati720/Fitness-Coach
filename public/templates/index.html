@@ -5,17 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Fitness Coach</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
 <div class="shell">
   <aside class="sidebar">
     <div class="logo"><span class="logo-dot"></span> FitAI Coach</div>
-    <button class="nav-item active" onclick="showPanel('pose',this)"><span class="nav-icon">&#9654;</span> Live Pose</button>
+    <button class="nav-item" onclick="showPanel('pose',this)"><span class="nav-icon">&#9654;</span> Live Pose</button>
     <button class="nav-item" onclick="showPanel('bmi',this)"><span class="nav-icon">⚖</span> BMI Calculator</button>
     <button class="nav-item" onclick="showPanel('recs',this)"><span class="nav-icon">&#9733;</span> Recommendations</button>
     <button class="nav-item" onclick="showPanel('nutrition',this)"><span class="nav-icon">&#9672;</span> Nutrition Plan</button>
     <button class="nav-item" onclick="showPanel('rl',this)"><span class="nav-icon">&#8679;</span> RL Progress</button>
+    <button class="nav-item" onclick="showPanel('workouts',this)"><span class="nav-icon">&#128170;</span> Workout Log</button>
+    <button class="nav-item" onclick="showPanel('goals',this)"><span class="nav-icon">&#127942;</span> Goals</button>
+    <button class="nav-item" onclick="showPanel('progress',this)"><span class="nav-icon">&#128200;</span> Progress</button>
     <button class="nav-item" onclick="showPanel('profile',this)"><span class="nav-icon">&#9711;</span> Profile</button>
     <div class="sidebar-footer">
       <div class="user-chip">
@@ -254,10 +257,61 @@
             <button class="save-btn" id="save-btn" type="button" onclick="saveProfile()" style="display:none;">Save profile</button>
             <button class="ghost-btn" id="cancel-btn" type="button" onclick="disableProfileEdit()" style="display:none;">Cancel</button>
           </div>
-          <div class="save-ok" id="save-ok">&#10003; Profile updated</div>
         </div>
       </div>
- 
+
+      <!-- WORKOUT LOG PANEL -->
+      <div class="panel" id="panel-workouts">
+        <div class="card">
+          <div class="card-title">Workout Log</div>
+          <div class="workout-form">
+            <div class="form-group"><label>Exercise</label><input type="text" id="w-exercise" placeholder="e.g. Squat"></div>
+            <div class="form-group"><label>Sets</label><input type="number" id="w-sets"></div>
+            <div class="form-group"><label>Reps</label><input type="number" id="w-reps"></div>
+            <div class="form-group"><label>Weight (kg)</label><input type="number" step="0.5" id="w-weight"></div>
+            <div class="form-group"><label>Date</label><input type="date" id="w-date"></div>
+          </div>
+          <div class="btn-row">
+            <button class="save-btn" onclick="logWorkout()">Log Workout</button>
+          </div>
+          <div id="workout-list"></div>
+        </div>
+      </div>
+
+      <!-- GOALS PANEL -->
+      <div class="panel" id="panel-goals">
+        <div class="card">
+          <div class="card-title">Goals</div>
+          <div class="goal-form">
+            <div class="form-group"><label>Goal Type</label><input type="text" id="g-type" placeholder="e.g. Lose 5kg"></div>
+            <div class="form-group"><label>Target Value</label><input type="number" step="0.1" id="g-target"></div>
+            <div class="form-group"><label>Current Value</label><input type="number" step="0.1" id="g-current"></div>
+            <div class="form-group"><label>Deadline</label><input type="date" id="g-deadline"></div>
+          </div>
+          <div class="btn-row">
+            <button class="save-btn" onclick="setGoal()">Set Goal</button>
+          </div>
+          <div id="goal-list"></div>
+        </div>
+      </div>
+
+      <!-- PROGRESS PANEL -->
+      <div class="panel" id="panel-progress">
+        <div class="card">
+          <div class="card-title">Progress Charts</div>
+          <div class="progress-form">
+            <div class="form-group"><label>Date</label><input type="date" id="pr-date"></div>
+            <div class="form-group"><label>Weight (kg)</label><input type="number" step="0.1" id="pr-weight"></div>
+            <div class="form-group"><label>BMI</label><input type="number" step="0.1" id="pr-bmi"></div>
+            <div class="form-group"><label>Goal Progress</label><input type="number" step="0.1" id="pr-goal"></div>
+          </div>
+          <div class="btn-row">
+            <button class="save-btn" onclick="logProgress()">Log Progress</button>
+          </div>
+          <div class="chart-wrap"><canvas id="progress-chart"></canvas></div>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>

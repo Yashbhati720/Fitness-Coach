@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AI Fitness Coach</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .register-container {
+            max-width: 500px;
+            margin: 80px auto;
+            padding: 22px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .register-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="password"], input[type="email"], select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+        .register-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .register-btn:hover {
+            background: #218838;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .top-heading {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .link-row {
+            text-align: center;
+            margin-top: 20px;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2 class="top-heading">Create Your Fitness Coach Account</h2>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        <form class="register-form" method="post" action="/register">
+            <div class="form-group full-width">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="text" id="age" name="age">
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="weight">Weight (kg)</label>
+                <input type="text" id="weight" name="weight">
+            </div>
+            <div class="form-group">
+                <label for="height">Height (cm)</label>
+                <input type="text" id="height" name="height">
+            </div>
+            <div class="form-group">
+                <label for="bmi">BMI</label>
+                <input type="text" id="bmi" name="bmi">
+            </div>
+            <div class="form-group">
+                <label for="goal">Goal</label>
+                <select id="goal" name="goal">
+                    <option value="">Select</option>
+                    <option value="muscle_gain">Muscle Gain</option>
+                    <option value="weight_loss">Weight Loss</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fitness_level">Fitness Level</label>
+                <select id="fitness_level" name="fitness_level">
+                    <option value="">Select</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <label for="activity_level">Activity Level</label>
+                <select id="activity_level" name="activity_level">
+                    <option value="">Select</option>
+                    <option value="sedentary">Sedentary</option>
+                    <option value="lightly_active">Lightly Active</option>
+                    <option value="moderately_active">Moderately Active</option>
+                    <option value="very_active">Very Active</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit" class="register-btn">Register</button>
+            </div>
+            <div class="link-row">
+                Already have an account? <a href="/login">Login here</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
