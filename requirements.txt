@@ -1,0 +1,13 @@
+# AI Fitness Coach — Requirements
+# Install with: pip install -r requirements.txt
+
+# Core ML / DL
+torch>=2.0.0
+numpy>=1.24.0
+
+# Computer Vision & Pose Estimation
+mediapipe>=0.10.0
+opencv-python>=4.8.0
+
+# Utilities
+dataclasses; python_version < "3.7"
